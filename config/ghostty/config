@@ -1,0 +1,36 @@
+# Ghostty terminal configuration Theme
+theme = Catppuccin Mocha
+
+# Font
+font-family = JetBrains Mono
+font-size = 16
+
+# Window
+window-padding-x = 12
+window-padding-y = 8
+window-theme = light
+macos-titlebar-style = hidden
+window-decoration = false
+window-padding-balance = true
+split-divider-color = #17FF00
+
+# Cursor
+cursor-style = block
+cursor-style-blink = false
+cursor-opacity = 1
+
+mouse-hide-while-typing = true
+
+# Shell integration
+shell-integration = zsh
+
+# Background opacity
+background-opacity = .9
+background-blur=16
+unfocused-split-opacity = 0.5
+
+
+# Misc
+copy-on-select = clipboard
+confirm-close-surface = false
+

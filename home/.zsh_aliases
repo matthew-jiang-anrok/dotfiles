@@ -1,0 +1,84 @@
+# Pick a project under ~/projects with fzf and cd into it.
+proj() {
+    local dir
+    dir=$(find ~/projects -mindepth 1 -maxdepth 1 -type d | sort | fzf --height 40% --reverse) || return
+    cd "$dir"
+}
+alias vim="nvim"
+alias develop="sh ~/.config/develop.sh"
+
+# Git
+alias gs="git status"
+alias gd="git diff"
+alias gds="git diff --staged"
+alias ga="git add"
+alias gaa="git add -A"
+alias gc="git commit"
+alias gcm="git commit -m"
+alias gca="git commit --amend"
+alias gp="git push"
+alias gpf="git push --force-with-lease"
+alias gl="git pull"
+alias gf="git fetch"
+alias gb="git branch"
+alias gcb="git checkout -b"
+alias glog="git log --oneline --graph --decorate -20"
+alias gst="git stash"
+alias gsp="git stash pop"
+alias grh="git reset --hard"
+alias gcp="git cherry-pick"
+
+gco() {
+    local branch
+    branch=$(git branch --all --sort=-committerdate | grep -v HEAD | sed 's|^[* ]*||' | fzf --height 40% --reverse) || return
+    git checkout "$(echo "$branch" | sed 's|^remotes/origin/||')"
+}
+
+# Git worktree helper.
+#   gwt <name>        create ../<repo>-<name> on branch matthewjiang/<name>, seed node_modules, cd in
+#   gwt ls            list worktrees
+#   gwt cd <name>     cd into an existing worktree
+#   gwt rm <name>     remove a worktree (branch is kept)
+gwt() {
+    local common main_root parent repo sub name dir branch
+    common=$(git rev-parse --git-common-dir 2>/dev/null) || { echo "gwt: not in a git repo"; return 1; }
+    main_root=$(cd "$(dirname "$common")" && pwd)
+    parent=$(dirname "$main_root")
+    repo=$(basename "$main_root")
+
+    sub="$1"
+    case "$sub" in
+        ls|list|"")
+            git worktree list
+            return
+            ;;
+        cd)
+            name="$2"; [ -z "$name" ] && { echo "usage: gwt cd <name>"; return 1; }
+            cd "$parent/$repo-$name"
+            return
+            ;;
+        rm|remove)
+            name="$2"; [ -z "$name" ] && { echo "usage: gwt rm <name>"; return 1; }
+            git worktree remove "$parent/$repo-$name" && echo "gwt: removed $repo-$name"
+            return
+            ;;
+    esac
+
+    name="$sub"
+    dir="$parent/$repo-$name"
+    branch="matthewjiang/$name"
+    [ -e "$dir" ] && { echo "gwt: $dir already exists"; return 1; }
+
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        git worktree add "$dir" "$branch" || return 1
+    else
+        git worktree add "$dir" -b "$branch" || return 1
+    fi
+
+    if [ -d "$main_root/node_modules" ]; then
+        echo "gwt: seeding node_modules from $repo ..."
+        cp -R "$main_root/node_modules" "$dir/node_modules"
+    fi
+    ( cd "$dir" && yarn install )
+    cd "$dir"
+}

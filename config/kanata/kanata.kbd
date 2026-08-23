@@ -1,0 +1,65 @@
+;; Laptop mirror of the iris_ce `homerow` QMK keymap: Colemak-DH base with
+;; home-row mods (CAGS) + symbol chords. No extra layers.
+
+(defcfg
+  process-unmapped-keys no
+  concurrent-tap-hold yes
+  macos-dev-names-include (
+    "Apple Internal Keyboard / Trackpad"
+    "Keychron Q1 HE"
+  )
+)
+
+(defsrc
+  grv  1    2    3    4    5    6    7    8    9    0    -    =
+  tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
+  caps a    s    d    f    g    h    j    k    l    ;    '
+  lsft z    x    c    v    b    n    m    ,    .    /    rsft
+  lctl lalt lmet spc  rmet ralt
+)
+
+(defalias
+  ;; home-row mods (CAGS): tap = letter, hold = modifier
+  a  (tap-hold-release 200 200 a lctl)
+  r  (tap-hold-release 200 200 r lalt)
+  s  (tap-hold-release 200 200 s lmet)
+  t  (tap-hold-release 200 200 t lsft)
+  n  (tap-hold-release 200 200 n rsft)
+  e  (tap-hold-release 200 200 e rmet)
+  i  (tap-hold-release 200 200 i ralt)
+  o  (tap-hold-release 200 200 o rctl)
+)
+
+;; ===== BASE: Colemak-DH ======================================================
+(deflayer base
+  grv  1    2    3    4    5    6    7    8    9    0    -    =
+  tab  q    w    f    p    b    j    l    u    y    ;    [    ]    \
+  caps @a   @r   @s   @t   g    m    @n   @e   @i   @o   '
+  lsft x    c    d    v    z    k    h    ,    .    /    rsft
+  lctl lalt lmet spc  rmet ralt
+)
+
+;; ===== OFF: internal keyboard fully dead =====================================
+;; Selected via TCP (iris-watch) whenever the Iris CE is plugged in, so resting
+;; the Iris on the laptop deck doesn't leak keystrokes. Back to `base` on unplug.
+(deflayer off
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX   XX
+  XX   XX   XX   XX   XX   XX
+)
+
+;; ===== symbol chords (QMK combos) ============================================
+;; physical keys resolve through the Colemak layer; pairs mirror the QMK combos.
+;; Disabled on `off` so a dead keyboard can't emit symbols via chords.
+(defchordsv2
+  (i u)   S-9  200 all-released (off)   ;; U+L -> (
+  (i o)   S-0  200 all-released (off)   ;; U+Y -> )
+  (x z)   [    200 all-released (off)   ;; C+X -> [
+  (x c)   ]    200 all-released (off)   ;; C+D -> ]
+  (, m)   S-[  200 all-released (off)   ;; ,+H -> {
+  (, .)   S-]  200 all-released (off)   ;; ,+. -> }
+  (e w)   -    200 all-released (off)   ;; F+W -> -
+  (e r)   =    200 all-released (off)   ;; F+P -> =
+)

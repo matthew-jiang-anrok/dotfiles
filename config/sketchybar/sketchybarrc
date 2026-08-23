@@ -1,0 +1,161 @@
+#!/usr/bin/env bash
+# ~/.config/sketchybar/sketchybarrc
+# Gruvbox Dark color scheme + AeroSpace workspace integration
+
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+# ── Gruvbox Dark palette ──────────────────────────────────────────────────────
+# bg0:     0xff282828   bg0_h:   0xff1d2021   bg1:      0xff3c3836
+# bg2:     0xff504945   bg3:     0xff665c54   bg4:      0xff7c6f64
+# fg:      0xffebdbb2   fg4:     0xffa89984   gray:     0xff928374
+# blue:    0xff83a598   aqua:    0xff8ec07c   purple:   0xffd3869b
+# green:   0xffb8bb26   yellow:  0xfffabd2f   red:      0xfffb4934
+# orange:  0xfffe8019
+
+# ── Bar appearance ────────────────────────────────────────────────────────────
+sketchybar --bar \
+  position=top \
+  height=36 \
+  margin=8 \
+  y_offset=4 \
+  corner_radius=10 \
+  blur_radius=0 \
+  color=0xcc282828 \
+  border_width=1 \
+  border_color=0x44ebdbb2 \
+  shadow=on \
+  topmost=window \
+  padding_left=12 \
+  padding_right=12
+
+# ── Global item defaults ──────────────────────────────────────────────────────
+sketchybar --default \
+  padding_left=4 \
+  padding_right=4 \
+  icon.font="Hack Nerd Font:Bold:15.0" \
+  label.font="Hack Nerd Font:Bold:13.0" \
+  icon.color=0xffebdbb2 \
+  label.color=0xffebdbb2 \
+  icon.padding_left=6 \
+  icon.padding_right=4 \
+  label.padding_left=4 \
+  label.padding_right=6
+
+# ── LEFT: AeroSpace workspace indicators ──────────────────────────────────────
+# Pills are repainted by plugins/ws_driver.sh, invoked directly from AeroSpace's
+# exec-on-workspace-change (see ~/.config/aerospace/aerospace.toml). Only the two
+# affected pills update per switch — no event, no per-item subscription/script.
+# The workspace number lives in the item's icon (NUM_COLOR); the app glyphs live
+# in the label (GLYPH_COLOR) — see space_icons.sh. Each pill is its own outline
+# bubble (border always on, fill transparent); the focused pill is filled by
+# ws_driver.sh. Keep these colors in sync with the constants there.
+GLYPH_COLOR=0xff83a598      # app icons (blue)
+NUM_COLOR=0xfffabd2f        # workspace number (yellow)
+BUBBLE_BORDER=0x44ebdbb2    # per-pill outline (echoes the section outline)
+
+for sid in 1 2 3 4 5 6 7 8 9 0; do
+  sketchybar --add item space.$sid left \
+    --set space.$sid \
+    background.drawing=on \
+    background.color=0x00000000 \
+    background.border_width=1 \
+    background.border_color=$BUBBLE_BORDER \
+    background.corner_radius=6 \
+    background.height=24 \
+    icon="$sid" \
+    icon.font="Hack Nerd Font:Bold:13.0" \
+    icon.color=$NUM_COLOR \
+    icon.padding_left=6 \
+    icon.padding_right=6 \
+    label="" \
+    label.font="Hack Nerd Font:Bold:12.0" \
+    label.color=$GLYPH_COLOR \
+    label.padding_left=0 \
+    label.padding_right=6 \
+    padding_left=3 \
+    padding_right=3 \
+    click_script="aerospace workspace $sid"
+done
+
+# Per-workspace app icons: a hidden driver item recomputes every pill's label
+# ("N  <app glyphs>") whenever the frontmost app changes. Workspace switches and
+# window moves refresh it via AeroSpace (see ~/.config/aerospace/aerospace.toml).
+sketchybar --add item space_icons left \
+  --set space_icons \
+  drawing=off \
+  script="$PLUGIN_DIR/space_icons.sh" \
+  --subscribe space_icons front_app_switched
+
+# Paint initial state: focused-pill highlight + app icons.
+FOCUSED=$(aerospace list-workspaces --focused 2>/dev/null)
+[ -n "$FOCUSED" ] && "$PLUGIN_DIR/ws_driver.sh" "$FOCUSED"
+"$PLUGIN_DIR/space_icons.sh"
+
+# Group workspace items under a shared background pill
+sketchybar --add bracket workspaces '/space\..*/' \
+  --set workspaces \
+  background.color=0x33504945 \
+  background.corner_radius=8 \
+  background.height=28 \
+  background.border_width=1 \
+  background.border_color=0x33ebdbb2
+
+# ── LEFT: Frontmost app name ──────────────────────────────────────────────────
+sketchybar --add item front_app left \
+  --set front_app \
+  icon.drawing=off \
+  label.font="Hack Nerd Font:Bold:13.0" \
+  label.color=0xffa89984 \
+  padding_left=10 \
+  script="$PLUGIN_DIR/front_app.sh" \
+  --subscribe front_app front_app_switched
+
+# ── RIGHT: Clock ──────────────────────────────────────────────────────────────
+sketchybar --add item clock right \
+  --set clock \
+  icon="" \
+  icon.color=0xff83a598 \
+  icon.padding_left=0 \
+  label.color=0xff83a598 \
+  padding_left=4 \
+  padding_right=4 \
+  update_freq=10 \
+  script="$PLUGIN_DIR/clock.sh"
+
+# ── RIGHT: Battery ────────────────────────────────────────────────────────────
+sketchybar --add item battery right \
+  --set battery \
+  label.color=0xffebdbb2 \
+  update_freq=120 \
+  script="$PLUGIN_DIR/battery.sh" \
+  --subscribe battery system_woke power_source_change
+
+# ── RIGHT: Volume ─────────────────────────────────────────────────────────────
+sketchybar --add item volume right \
+  --set volume \
+  label.color=0xffebdbb2 \
+  script="$PLUGIN_DIR/volume.sh" \
+  --subscribe volume volume_change
+
+# ── RIGHT: Media / now-playing ────────────────────────────────────────────────
+# Backed by ungive/media-control. A single "Artist — Title" label, refreshed on
+# the custom media_update event (pushed by media_stream.sh). Left-click toggles
+# play/pause, right-click skips, scroll = prev/next.
+sketchybar --add event media_update
+
+sketchybar --add item media right \
+  --set media \
+  drawing=off \
+  icon="" \
+  icon.color=0xffd3869b \
+  label.color=0xffd3869b \
+  script="$PLUGIN_DIR/media.sh" \
+  --subscribe media media_update mouse.clicked mouse.scrolled
+
+# Push-based updates: long-running stream listener started once.
+killall media_stream.sh 2>/dev/null
+"$PLUGIN_DIR/media_stream.sh" >/dev/null 2>&1 &
+NAME=media "$PLUGIN_DIR/media.sh"
+
+# ── Trigger initial update ────────────────────────────────────────────────────
+sketchybar --update

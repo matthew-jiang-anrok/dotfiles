@@ -1,0 +1,141 @@
+config-version = 2
+
+# ── Startup ──────────────────────────────────────────────────────────────────
+after-startup-command = [
+    'exec-and-forget sketchybar',
+    'exec-and-forget borders active_color="glow(0xff00ffaa)" inactive_color=0xff313244 width=6.0',
+]
+
+start-at-login = true
+automatically-unhide-macos-hidden-apps = true
+
+# ── Layout defaults ───────────────────────────────────────────────────────────
+accordion-padding = 30
+default-root-container-layout = 'tiles'
+default-root-container-orientation = 'auto'
+
+# ── Tree normalizations ───────────────────────────────────────────────────────
+enable-normalization-flatten-containers = true
+enable-normalization-opposite-orientation-for-nested-containers = true
+
+# ── Mouse follows focus ───────────────────────────────────────────────────────
+on-focused-monitor-changed = []
+on-focus-changed = []
+
+# ── Sketchybar integration ────────────────────────────────────────────────────
+# AeroSpace repaints only the two affected pills directly (no sketchybar event,
+# no per-item scripts): un-highlight the workspace we left, highlight the new one.
+exec-on-workspace-change = ['/bin/bash', '-c',
+    "$HOME/.config/sketchybar/plugins/ws_driver.sh $AEROSPACE_FOCUSED_WORKSPACE $AEROSPACE_PREV_WORKSPACE; $HOME/.config/sketchybar/plugins/space_icons.sh"
+]
+
+# ── Key mapping ───────────────────────────────────────────────────────────────
+[key-mapping]
+    preset = 'qwerty'
+
+# ── Gaps (Hyprland-style breathing room) ─────────────────────────────────────
+[gaps]
+    inner.horizontal = 8
+    inner.vertical   = 8
+    outer.left       = 8
+    outer.bottom     = 8
+    outer.top        = [{monitor.'built-in' = 16}, 48]
+    outer.right      = 8
+
+# ── Window rules ──────────────────────────────────────────────────────────────
+[[on-window-detected]]
+    if.app-id = 'com.apple.systempreferences'
+    run = 'layout floating'
+
+[[on-window-detected]]
+    if.app-id = 'com.apple.calculator'
+    run = 'layout floating'
+
+# ── Main keybindings ──────────────────────────────────────────────────────────
+[mode.main.binding]
+    # Focus
+    alt-left = 'focus left'
+    alt-down = 'focus down'
+    alt-up = 'focus up'
+    alt-right = 'focus right'
+
+    # Cycle windows in the focused workspace (DFS order, wraps at the ends)
+    alt-n = 'focus --wrap-around dfs-next'
+    alt-p = 'focus --wrap-around dfs-prev'
+
+    # Move windows
+    alt-shift-left = 'move left'
+    alt-shift-down = 'move down'
+    alt-shift-up = 'move up'
+    alt-shift-right = 'move right'
+
+    # Resize
+    alt-minus = 'resize smart -50'
+    alt-equal = 'resize smart +50'
+
+    # Layout toggles
+    alt-slash       = 'layout tiles horizontal vertical'
+    alt-comma       = 'layout accordion horizontal vertical'
+    alt-shift-space = 'layout floating tiling'
+    alt-f           = 'macos-native-fullscreen'
+    alt-shift-p     = 'exec-and-forget $HOME/.config/aerospace/scripts/toggle-padding.sh'  # toggle +400px side padding
+
+    # Workspace switching (number-based)
+    alt-1 = 'workspace 1'
+    alt-2 = 'workspace 2'
+    alt-3 = 'workspace 3'
+    alt-4 = 'workspace 4'
+    alt-5 = 'workspace 5'
+    alt-6 = 'workspace 6'
+    alt-7 = 'workspace 7'
+    alt-8 = 'workspace 8'
+    alt-9 = 'workspace 9'
+    alt-0 = 'workspace 0'
+
+    # Move window to workspace (refresh pill icons: a move fires no workspace-
+    # change / front-app event, so trigger space_icons.sh explicitly).
+    alt-shift-1 = ['move-node-to-workspace 1', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-2 = ['move-node-to-workspace 2', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-3 = ['move-node-to-workspace 3', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-4 = ['move-node-to-workspace 4', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-5 = ['move-node-to-workspace 5', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-6 = ['move-node-to-workspace 6', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-7 = ['move-node-to-workspace 7', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-8 = ['move-node-to-workspace 8', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-9 = ['move-node-to-workspace 9', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-0 = ['move-node-to-workspace 0', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+
+    # Window management
+    alt-q     = 'close'
+    alt-enter = 'exec-and-forget osascript -e "tell application \"Ghostty\" to new window"'
+
+    # Mode switching
+    alt-shift-semicolon = 'mode service'
+    alt-shift-r         = 'mode resize'
+
+    # Disable accidental macOS app hide shortcut
+    cmd-h = []
+
+# ── Service mode ──────────────────────────────────────────────────────────────
+[mode.service.binding]
+    esc       = ['reload-config', 'mode main']
+    r         = ['flatten-workspace-tree', 'mode main']
+    f         = ['layout floating tiling', 'mode main']
+    backspace = ['close-all-windows-but-current', 'mode main']
+
+    # Join windows into a container
+    alt-shift-left = ['join-with left',  'mode main']
+    alt-shift-down = ['join-with down',  'mode main']
+    alt-shift-up = ['join-with up',    'mode main']
+    alt-shift-right = ['join-with right', 'mode main']
+
+# ── Resize mode ───────────────────────────────────────────────────────────────
+[mode.resize.binding]
+    left  = 'resize width -50'
+    down  = 'resize height +50'
+    up    = 'resize height -50'
+    right = 'resize width +50'
+    minus = 'resize smart -50'
+    equal = 'resize smart +50'
+    enter = 'mode main'
+    esc   = 'mode main'
