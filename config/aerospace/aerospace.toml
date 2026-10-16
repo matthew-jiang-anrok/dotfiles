@@ -42,6 +42,24 @@ exec-on-workspace-change = ['/bin/bash', '-c',
     outer.top        = [{monitor.'built-in' = 16}, 48]
     outer.right      = 8
 
+# ── Workspace → monitor assignment ────────────────────────────────────────────
+# Numbered workspaces live on the laptop screen; lettered (app-home) workspaces
+# live on the external, except Z[oom], which stays on the laptop.
+# 'DELL' and 'MSI' match monitors by name, 'secondary' catches any other external.
+# When only one monitor is attached AeroSpace falls back to it, so nothing is
+# lost undocked.
+[workspace-to-monitor-force-assignment]
+    1 = 'built-in'
+    2 = 'built-in'
+    3 = 'built-in'
+    C = ['DELL', 'MSI', 'secondary']
+    F = ['DELL', 'MSI', 'secondary']
+    N = ['DELL', 'MSI', 'secondary']
+    S = ['DELL', 'MSI', 'secondary']
+    T = ['DELL', 'MSI', 'secondary']
+    V = ['DELL', 'MSI', 'secondary']
+    Z = 'built-in'
+
 # ── Window rules ──────────────────────────────────────────────────────────────
 [[on-window-detected]]
     if.app-id = 'com.apple.systempreferences'
@@ -51,17 +69,46 @@ exec-on-workspace-change = ['/bin/bash', '-c',
     if.app-id = 'com.apple.calculator'
     run = 'layout floating'
 
+# App → lettered workspace (on the external, except Z). Workspaces 1/2/3 stay
+# unassigned scratch space on the laptop, so anything without a rule here —
+# Chrome included — opens wherever you are.
+# Keep this list in sync with the pill list in ~/.config/sketchybar/sketchybarrc
+# and the workspace loop in plugins/space_icons.sh.
+[[on-window-detected]]
+    if.app-id = 'com.anthropic.claudefordesktop'
+    run = 'move-node-to-workspace C'      # [C]laude
+
+[[on-window-detected]]
+    if.app-id = 'org.mozilla.firefox'
+    run = 'move-node-to-workspace F'      # [F]irefox
+
+[[on-window-detected]]
+    if.app-id = 'notion.id'
+    run = 'move-node-to-workspace N'      # [N]otion
+
+[[on-window-detected]]
+    if.app-id = 'com.tinyspeck.slackmacgap'
+    run = 'move-node-to-workspace S'      # [S]lack
+
+[[on-window-detected]]
+    if.app-id = 'com.mitchellh.ghostty'
+    run = 'move-node-to-workspace T'      # [T]erminal
+
+[[on-window-detected]]
+    if.app-id = 'com.microsoft.VSCode'
+    run = 'move-node-to-workspace V'      # [V]S Code
+
+[[on-window-detected]]
+    if.app-id = 'us.zoom.xos'
+    run = 'move-node-to-workspace Z'      # [Z]oom
+
 # ── Main keybindings ──────────────────────────────────────────────────────────
 [mode.main.binding]
-    # Focus
-    alt-left = 'focus left'
-    alt-down = 'focus down'
-    alt-up = 'focus up'
-    alt-right = 'focus right'
 
-    # Cycle windows in the focused workspace (DFS order, wraps at the ends)
-    alt-n = 'focus --wrap-around dfs-next'
-    alt-p = 'focus --wrap-around dfs-prev'
+    # Cycle windows in the focused workspace (DFS order, wraps at the ends).
+    # On tab, not alt-n/alt-p — those letters are workspace switches now.
+    alt-tab       = 'focus --wrap-around dfs-next'
+    alt-shift-tab = 'focus --wrap-around dfs-prev'
 
     # Move windows
     alt-shift-left = 'move left'
@@ -77,33 +124,35 @@ exec-on-workspace-change = ['/bin/bash', '-c',
     alt-slash       = 'layout tiles horizontal vertical'
     alt-comma       = 'layout accordion horizontal vertical'
     alt-shift-space = 'layout floating tiling'
-    alt-f           = 'macos-native-fullscreen'
+    alt-m           = 'macos-native-fullscreen'   # [m]aximize; alt-f is workspace F now
     alt-shift-p     = 'exec-and-forget $HOME/.config/aerospace/scripts/toggle-padding.sh'  # toggle +400px side padding
 
-    # Workspace switching (number-based)
+    # Workspace switching. 1/2/3 are the free-form scratch spaces on the laptop
+    # screen; the letters are app homes on the external — see the
+    # on-window-detected rules and [workspace-to-monitor-force-assignment].
     alt-1 = 'workspace 1'
     alt-2 = 'workspace 2'
     alt-3 = 'workspace 3'
-    alt-4 = 'workspace 4'
-    alt-5 = 'workspace 5'
-    alt-6 = 'workspace 6'
-    alt-7 = 'workspace 7'
-    alt-8 = 'workspace 8'
-    alt-9 = 'workspace 9'
-    alt-0 = 'workspace 0'
+    alt-c = 'workspace C'   # Claude
+    alt-f = 'workspace F'   # Firefox
+    alt-n = 'workspace N'   # Notion
+    alt-s = 'workspace S'   # Slack
+    alt-t = 'workspace T'   # Terminal (Ghostty)
+    alt-v = 'workspace V'   # VS Code
+    alt-z = 'workspace Z'   # Zoom
 
     # Move window to workspace (refresh pill icons: a move fires no workspace-
     # change / front-app event, so trigger space_icons.sh explicitly).
     alt-shift-1 = ['move-node-to-workspace 1', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
     alt-shift-2 = ['move-node-to-workspace 2', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
     alt-shift-3 = ['move-node-to-workspace 3', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-4 = ['move-node-to-workspace 4', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-5 = ['move-node-to-workspace 5', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-6 = ['move-node-to-workspace 6', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-7 = ['move-node-to-workspace 7', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-8 = ['move-node-to-workspace 8', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-9 = ['move-node-to-workspace 9', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
-    alt-shift-0 = ['move-node-to-workspace 0', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-c = ['move-node-to-workspace C', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-f = ['move-node-to-workspace F', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-n = ['move-node-to-workspace N', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-s = ['move-node-to-workspace S', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-t = ['move-node-to-workspace T', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-v = ['move-node-to-workspace V', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
+    alt-shift-z = ['move-node-to-workspace Z', 'exec-and-forget $HOME/.config/sketchybar/plugins/space_icons.sh']
 
     # Window management
     alt-q     = 'close'

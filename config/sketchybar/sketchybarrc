@@ -45,15 +45,21 @@ sketchybar --default \
 # Pills are repainted by plugins/ws_driver.sh, invoked directly from AeroSpace's
 # exec-on-workspace-change (see ~/.config/aerospace/aerospace.toml). Only the two
 # affected pills update per switch — no event, no per-item subscription/script.
-# The workspace number lives in the item's icon (NUM_COLOR); the app glyphs live
+# The workspace id lives in the item's icon (NUM_COLOR); the app glyphs live
 # in the label (GLYPH_COLOR) — see space_icons.sh. Each pill is its own outline
 # bubble (border always on, fill transparent); the focused pill is filled by
 # ws_driver.sh. Keep these colors in sync with the constants there.
 GLYPH_COLOR=0xff83a598      # app icons (blue)
-NUM_COLOR=0xfffabd2f        # workspace number (yellow)
+NUM_COLOR=0xfffabd2f        # workspace id (yellow)
 BUBBLE_BORDER=0x44ebdbb2    # per-pill outline (echoes the section outline)
 
-for sid in 1 2 3 4 5 6 7 8 9 0; do
+# 1/2/3 are the free-form numbered spaces on the laptop screen; the letters are
+# app homes on the external ([C]laude, [F]irefox, [N]otion, [S]lack,
+# [T]erminal, [V]S Code, [Z]oom). Keep this list in sync with the bindings in
+# ~/.config/aerospace/aerospace.toml and the loop in plugins/space_icons.sh.
+# AeroSpace orders workspaces digits-then-letters, so this order matches the
+# actual switch order.
+for sid in 1 2 3 C F N S T V Z; do
   sketchybar --add item space.$sid left \
     --set space.$sid \
     background.drawing=on \

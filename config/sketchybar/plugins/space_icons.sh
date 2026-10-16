@@ -34,6 +34,7 @@ glyph_for() {
     Firefox)                                             printf '\xEF\x89\xA9' ;;  # firefox   U+F269
     Slack)                                               printf '\xEF\x86\x98' ;;  # slack     U+F198
     Notion|Notes)                                        printf '\xEF\x89\x89' ;;  # note      U+F249
+    Claude)                                              printf '\xEF\x83\x90' ;;  # magic     U+F0D0
     Mail|Spark|Superhuman)                               printf '\xEF\x83\xA0' ;;  # envelope  U+F0E0
     Messages)                                            printf '\xEF\x81\xB5' ;;  # comment   U+F075
     Spotify|Music)                                       printf '\xEF\x86\xBC' ;;  # spotify   U+F1BC
@@ -53,7 +54,9 @@ glyph_for() {
 ALL="$("$AEROSPACE" list-windows --all --format '%{workspace}|%{app-name}' 2>/dev/null)"
 
 args=()
-for ws in 1 2 3 4 5 6 7 8 9 0; do
+# Keep in sync with the pill list in sketchybarrc and the bindings in
+# ~/.config/aerospace/aerospace.toml.
+for ws in 1 2 3 C F N S T V Z; do
   # Distinct apps in this workspace, stable order. awk filters the single
   # dataset (no extra aerospace calls); sort -u dedups multi-window apps.
   glyphs=""
